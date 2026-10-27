@@ -57,7 +57,8 @@ jobs:
           token: ${{ secrets.SOURCE_REPO_TOKEN }}
           path: src
           filter: blob:none
-          persist-credentials: false
+          # Giữ mặc định persist-credentials: tắt đi thì checkout chạy `git submodule foreach` để gỡ
+          # token và hỏng vì repo nguồn có mục .react-branch-temp lưu như submodule thiếu .gitmodules.
 
       # latest.json lấy tag từ version trong tauri.conf.json — phải trùng tag được build.
       - name: Check version matches tag
