@@ -101,6 +101,12 @@ jobs:
         working-directory: src/pos-tauri-v2
         run: npm run typecheck
 
+      # target/ được cache nên bundle/ còn installer của các bản trước: xoá để chỉ còn bản đang build.
+      - name: Remove old bundles
+        working-directory: src/pos-tauri-v2
+        shell: bash
+        run: rm -rf src-tauri/target/release/bundle
+
       # Build trực tiếp (không dùng tauri-action) để giữ file .sig cho generate-latest-json.mjs.
       - name: Build Tauri app (signed updater artifacts)
         working-directory: src/pos-tauri-v2
@@ -121,12 +127,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         working-directory: src/pos-tauri-v2/src-tauri/target/release/bundle/nsis
         run: |
+          v="${RELEASE_TAG#v}"
           gh release create "$RELEASE_TAG" \
             --repo "$GITHUB_REPOSITORY" \
             --target main \
             --title "SIMPOS $RELEASE_TAG" \
             --notes "Bản cập nhật $RELEASE_TAG. Installer hiện chưa ký Authenticode — SmartScreen sẽ cảnh báo lần cài đầu." \
-            *-setup.exe *-setup.exe.sig latest.json \
+            *_${v}_*-setup.exe *_${v}_*-setup.exe.sig latest.json \
           || gh release upload "$RELEASE_TAG" \
             --repo "$GITHUB_REPOSITORY" --clobber \
-            *-setup.exe *-setup.exe.sig latest.json
+            *_${v}_*-setup.exe *_${v}_*-setup.exe.sig latest.json
